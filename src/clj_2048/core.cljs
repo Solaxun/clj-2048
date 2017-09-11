@@ -15,17 +15,22 @@
   [:a {:href "http://www.google.com"} "Google!"])
 
 (defn hello-world []
-  [:center [:div 
-            (for [row (:grid @app-state)]
-              [:tr  (for [cell row]
-                      [:td {:style {:padding "10px" :border "1px solid black"}} cell])])
-            [:button {:on-click #(reset! app-state {:grid (game/new-board)})
-                      :style {:background-color "black" :color "white"}} "New Game!"]]])
+  [:center [:h1 "2048 in Clojure"]
+   [:div {:style {:margin-bottom "10px"}}
+    (for [row (:grid @app-state)]
+      [:tr  (for [cell row]
+              [:td {:style {:width "40px"
+                            :height "40px"
+                            :padding "25px 10px 10px 10px"
+                            :border "1px solid black"}}
+               cell])])]
+    [:button {:on-click #(reset! app-state {:grid (game/new-board)})
+              :style {:background-color "black" :color "white"}} "New Game!"]])
 
 (defn process-move [e]
   (let [k (.-keyCode e)
         dir ({39 "R" 37 "L" 40 "D" 38 "U"} k)]
-    (reset! app-state {:grid (game/move-board dir (:grid @app-state))})))
+    (reset! app-state {:grid (game/move dir (:grid @app-state))})))
 
 (reagent/render-component [hello-world]
                           (. js/document (getElementById "app"))
