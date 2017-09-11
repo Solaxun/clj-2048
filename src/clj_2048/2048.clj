@@ -1,14 +1,15 @@
 (ns clj-2048.2048
   (:require [clojure.string :as str]))
 
+(defn rand-square []
+  (rand-nth [2 2 2 4]))
+
 (defn empty-square-coords [board]
   (apply concat
          (map-indexed (fn [r row]
-                        (map-indexed (fn [c col] (if (= "." col) [r,c] nil))
+                        (map-indexed (fn [c col] (if (= " " col) [r,c] nil))
                                      row))
                       board)))
-(defn rand-square []
-  (rand-nth [2 2 2 4]))
 
 (defn place-new-square [board]
   (as-> board b
@@ -17,15 +18,19 @@
         (rand-nth b)
         (assoc-in board b (rand-square))))
 
+(defn new-board []
+  (let [empty-board (vec (repeat 4 (vec (repeat 4 " "))))]
+    (nth (iterate place-new-square empty-board) 4)))
+
 (defn pad-slice [slice]
-  (let [padding (repeat (- 4 (count slice)) ".")]
-       (vec (concat padding slice))))
+  (let [padding (repeat (- 4 (count slice)) " ")]
+    (vec (concat padding slice))))
        
 (defn merge-right [slice]
-  (loop [s (remove #(= "." %) slice),  r '()]
+  (loop [s (remove #(= " " %) slice),  r '()]
     (let [cur (last s), prev (last (drop-last s))]
       (cond (empty? s) (pad-slice r)
-            (= "." cur) (recur (drop-last 1 s) r)
+            (= " " cur) (recur (drop-last 1 s) r)
             (= cur prev) (recur (drop-last 2 s) (conj r (+ cur prev)))
             :else (recur (drop-last s) (conj r cur))))))
        
@@ -44,11 +49,6 @@
         (= dir "U") (transpose (mapv merge-left (transpose board)))
         :else (println "Error: you entered:"  dir " Choose only U, L, D , or R!"))) 
 
-(def test-grid  [[2 "." "." "."]
-                 ["." 4 "." "."]
-                 ["." 8 "." "."]
-                 ["." "." 16 8]])
-
 (defn move [dir board]
   (->> board
       (move-board dir)
@@ -57,19 +57,3 @@
 (defn game-over? [board]
   (empty? (filter (complement nil?) 
                   (empty-square-coords board))))
-
-(def sample-moves ["R" "R" "L" "D" "R"])
-
-(take-while (complement game-over?)
-            (reductions (fn [board dir] (move dir board)) test-grid sample-moves))
-
-(defn game-loop [board]
-  (loop [b board]
-    (if (game-over? b) "Game Over!"
-        (do (doall (map println b))
-            (println "\n")
-            (recur (move (read-line) b))))))
-
-(defn -main []
-  (println "Welcome to 2048!")
-  (game-loop test-grid))
