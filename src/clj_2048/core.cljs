@@ -33,8 +33,8 @@
         board (game/move dir (:grid @app-state))]
     (reset! app-state {:grid board})
     (if (game/game-over? board)
-      (doall
-        (.alert js/window "Game Over!")
+      (do
+        (.alert js/window "You kinda suck at this.... Try Again!")
         (reset! app-state {:grid (game/new-board)})))))
 
 (reagent/render-component [hello-world]
