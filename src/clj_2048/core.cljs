@@ -29,8 +29,13 @@
 
 (defn process-move [e]
   (let [k (.-keyCode e)
-        dir ({39 "R" 37 "L" 40 "D" 38 "U"} k)]
-    (reset! app-state {:grid (game/move dir (:grid @app-state))})))
+        dir ({39 "R" 37 "L" 40 "D" 38 "U"} k)
+        board (game/move dir (:grid @app-state))]
+    (reset! app-state {:grid board})
+    (if (game/game-over? board)
+      (doall
+        (.alert js/window "Game Over!")
+        (reset! app-state {:grid (game/new-board)})))))
 
 (reagent/render-component [hello-world]
                           (. js/document (getElementById "app"))
